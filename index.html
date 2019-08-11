@@ -1,0 +1,277 @@
+<html>
+  <head>
+    <body>
+      <style>
+        .row {
+/*           padding : 20px; */
+/*           border : 2px solid black; */
+          height: 50px;
+        }
+        
+        .block {
+          height : 50px;
+          width : 50px;
+          display : inline-block;
+          color: white;
+          font-size : 11px;
+          background-color : green;
+        }
+        
+        .Sqr1, .blue {  
+          background-color: teal;
+        }
+        
+        .Sqr2, .black {
+          background-color: black;
+        }
+        
+        #controller {
+          margin-top : 20px;
+        }
+        
+        #controller .block {
+          text-align : center;
+          line-height : 50px;
+          width: 50px;
+          height: 50px;
+          cursor : pointer;
+          font-size : 11px;
+        }
+        
+        #controller .block:active {
+          opacity : 0.4;
+        }
+        
+        #currentBlock {
+          background-color : red;
+        }
+        
+        .upDown {
+          margin-left : 25px;
+        }
+        
+        .goal {
+          background-color : white;
+        }
+        
+      </style>
+      
+      <div id="game"></div>
+      <div id="controller"> 
+        <div class= "upDown">
+          <div class="block" onclick= "onClick('UP')"> UP </div>
+        </div>
+        <div>
+          <div class="block" onclick= "onClick('LEFT')"> LEFT </div>
+          <div class="block" onclick= "onClick('RIGHT')"> RIGHT </div>
+        </div>
+        <div class = "upDown">  
+          <div class="block" onclick= "onClick('DOWN')"> DOWN </div>
+        </div>
+      </div>
+          
+      <script>
+        var level = 0;
+        var gridSize = [4,5,7]; 
+        var classConverter = ["black", "blue", "goal"];
+      
+        var data = [ 
+          [
+            0,0,0,0,
+            0,2,0,0,
+            0,1,1,0,
+            0,0,0,0
+          ],
+          
+          [
+            0,0,0,0,0,
+            0,1,0,2,0,
+            0,1,1,1,0,
+            0,1,1,0,0,
+            0,0,0,0,0
+          ],
+          
+          [
+            0,0,0,0,0,0,0,
+            0,1,1,0,0,0,0,
+            0,0,1,1,0,0,0,
+            0,1,0,1,0,1,0,
+            0,1,1,1,0,1,0,
+            0,1,0,1,1,2,0,
+            0,0,0,0,0,0,0,
+            
+          ]
+        ];
+        
+        var currentX = 2;
+        var currentY = 2;
+        
+        showGrid();
+        
+        function showGrid() {
+          var gameElement = document.getElementById("game");
+          for(let i = 0; i < gridSize[level]; i++) {
+
+            var rowElement = document.createElement("div");
+            rowElement.className = "row";  
+            for(let j = 0; j < gridSize[level]; j++) {
+              var blockElement = document.createElement("div");
+              // 0, 1 ,2 => 'black', 'blue', 'goal'    
+              blockElement.className = "block " + classConverter[data[level][gridSize[level]*i + j]];
+              rowElement.appendChild(blockElement);
+              blockElement.innerHTML = "(" + i + "," + j + ")";
+            }
+            gameElement.appendChild(rowElement);
+          }
+          
+          var blockByPosition = getBlockByPosition(currentX,currentY);
+          blockByPosition.id = "currentBlock";
+          
+          // blockByPosition.style.backgroundColor = "red";
+        }
+        
+        function getBlockByPosition(x,y) {
+          // var blockArray = document.getElementsByClassName("block");
+          // return blockArray[gridSize*x + y];
+          var rowArray = document.getElementsByClassName("row");
+          var blockArray = rowArray[x].getElementsByClassName("block");
+          return blockArray[y];
+        }
+        
+        function onClick(direction) {
+          var blockByPosition;
+          var newX = currentX;
+          var newY = currentY;
+          switch(direction) {
+            case "UP" :
+              if(currentX > 0) {
+                newX = currentX - 1 ;
+              }
+              break;
+            
+            case "DOWN" :
+              if(currentX < (gridSize[level]-1)) {
+                newX = currentX + 1 ;
+              }
+              break;
+
+            case "LEFT" :
+              if(currentY > 0) {              
+              newY = currentY - 1; ;
+              }
+              break;
+            
+            case "RIGHT" :
+               // = condition ? trueValue: falseValue
+              newY = currentY < (gridSize[level]-1) ? currentY + 1 : currentY;
+              break;
+          } 
+          var doMove = Move(newX,newY);
+          if(doMove == true) {
+            blockByPosition = getBlockByPosition(newX,newY);
+            blockByPosition.id = "currentBlock";
+            blockByPosition =  getBlockByPosition(currentX,currentY);
+            blockByPosition.id = "";
+            currentX = newX;
+            currentY = newY;
+            checkWin(currentX,currentY);
+          }
+        }
+        
+        function Move(Nx, Ny) {
+          if(data[level][gridSize[level]*Nx + Ny] == 0) {
+            return false; 
+          }
+          else return true; 
+        }
+        
+        function checkWin(currentX,currentY) {
+          if(data[level][gridSize[level]*currentX + currentY] == 2) {
+            window.alert("You Win!!");
+            loadNextLevel();
+          }
+        }
+        
+        function loadNextLevel() {
+          currentX = 2;
+          currentY = 2;
+          var gameElement = document.getElementById("game");
+          removeAllChild(gameElement);
+          if (level < data.length-1) { 
+            level = level + 1;
+          }
+          else {
+            level = 0;
+          }
+          showGrid(); 
+        }
+        
+        function removeAllChild(element) { //return nothing
+          for(let i = 0; i < gridSize[level]; i++) {
+            var rowElement = element.firstChild;
+            element.removeChild(rowElement); // 
+          }
+        }
+        
+      </script>
+    </body>
+  </head>
+</html>
+
+<!-- --------------------------------
+
+
+B R B
+R B R
+B R B
+
+
+B: 100px square blue color
+R: 100px square red color 
+
+
+i j index in data array
+0 0 0   j
+0 1 1   j
+0 2 2   j
+1 0 3   j + 3*1
+1 1 4   j + 3*1
+1 2 5   j + 3*1
+2 0 6   j + 3*2
+2 1 7   j + 3*2
+2 2 8   j + 3*2
+
+3*i + j
+
+How to search for child element, given a parent element?
+Note: document is reference to special element, i.e., <html> ... </html> i.e., we search in whole HTML Code.
+These methods can be applied to any element, not just document.
+
+1. Get unique element using Id attribute of that element
+e.g. <div id='uniqueId'> </div>
+
+=> document.getElementById('uniqueId')
+
+2. Get list of elements with particular tag e.g li
+=> document.getElementsByTagName('li') this will return an array of elements
+
+3. Get list of elements with particular class e.g., <div class='block'> </div>
+=> document.getElementsByClassNamae('block') this will return an array of elements
+
+
+currentPosition
+newPosition
+
+Check newPosition is valid or not
+  newPosition has class black or not, if black not valid, else valid
+
+OnClick :
+  1. -_-
+
+Element: 
+  firstChild : reference to first child (it is not a method)
+  usage : gameElement.fistChild => referece to first child if it exist otherwise return null
+  
+  removeChild([reference of child to remove])
+  usage: gameElement.removeChild(rowElement);
+-------------------------------- -->
